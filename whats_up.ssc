@@ -1,0 +1,338 @@
+/*
+Name: Stellarium-To-Video (whats_up.ssc)
+License: Public Domain
+Author: Chris Bennett
+Version: 1.0
+Description: A Script for What's up in the night sky.
+*/
+
+include("settings.inc");
+include("common_objects.inc");
+
+const dtg = "2026-11-14T16:45:00";
+const loc = { lon: -76.986769, lat: 39.647307, elev: 210, name: "BBNC", planet: "Earth" };
+
+
+setup();
+setSunset()
+core.moveToAltAzi(90, 270, 3);
+core.waitForKeypress();
+
+fastForward(800, getAstTwilight("end"));
+core.wait(3);
+
+core.waitForKeypress();
+var moon= core.getObjectInfo("Moon");
+
+// go to the Moon
+core.moveToAltAzi(90, moon["azimuth"], 4);
+core.wait(4);
+
+core.waitForKeypress();
+// Zoom on Moon
+core.moveToAltAzi(moon["altitude"] + .5, moon["azimuth"], 3);
+StelMovementMgr.zoomTo(2, 5);
+core.wait(5);
+
+core.waitForKeypress();
+// Zoom back out
+StelMovementMgr.zoomTo(180, 5);
+core.moveToAltAzi(90, moon["azimuth"], 4);
+core.wait(5);
+
+// Look North
+core.moveToAltAzi(90, 0, 4);
+core.wait(5);
+
+core.waitForKeypress();
+AsterismMgr.setFlagIsolateAsterismSelected(true);
+AsterismMgr.deselectAsterisms();
+AsterismMgr.setFlagLines(true);
+
+// Show the Big Dipper
+AsterismMgr.selectAsterism("Big Dipper (Plough)");
+core.wait(2);
+
+core.waitForKeypress();
+// Draw a pointer to Polaris
+MarkerMgr.deleteAllMarkers();
+// RA1, Dec1, RA2, Dec2, #points, Color
+drawPointer(165.46, 56.38, 37.95, 89.26, 40, "#D42A2A");
+core.wait(2);
+
+core.waitForKeypress();
+// Show the Little Dipper
+AsterismMgr.selectAsterism("Little Dipper");
+MarkerMgr.deleteAllMarkers();
+core.wait(2);
+
+core.waitForKeypress();
+// Show the "W"
+AsterismMgr.selectAsterism("W");
+core.wait(2);
+
+// Draw a pointer to Polaris
+drawPointer(14.0, 62.5, 37.95, 89.26, 40, "#D42A2A");
+core.wait(2);
+
+core.waitForKeypress();
+// Clear Asterisms
+MarkerMgr.deleteAllMarkers();
+AsterismMgr.deselectAsterisms();
+AsterismMgr.setFlagLines(false);
+core.wait(2);
+
+
+// Show coordinate grid.
+showEqGrid();
+
+// show circumpolar constellations
+ConstellationMgr.setFlagIsolateSelected(true);
+ConstellationMgr.setFlagConstellationPick(false);
+ConstellationMgr.deselectConstellations();
+ConstellationMgr.setFlagLines(true);
+ConstellationMgr.setFlagArt(true);
+
+for (var i = 0; i < circumpolar.length; i++) {
+    core.selectConstellationByName(circumpolar[i]);
+    StelMovementMgr.deselection();
+    core.wait(1);
+}
+
+// fast forward to 10 PM
+fastForward(800, "2026-11-14T22:00:00");
+
+// Select Ursa Major
+core.waitForKeypress();
+GridLinesMgr.setFlagEquatorGrid(false);
+ConstellationMgr.setFlagLines(false);
+ConstellationMgr.deselectConstellations();
+ConstellationMgr.setFlagConstellationPick(true);
+core.selectConstellationByName("Ursa Major");
+ConstellationMgr.setFlagLines(true);
+ConstellationMgr.setFlagArt(true);
+
+
+var M81 = core.getObjectInfo("M81");
+// go to M81
+core.moveToAltAzi(90, M81["azimuth"], 4);
+core.wait(4);
+
+core.waitForKeypress();
+StelSkyLayerMgr.setFlagShow(true);
+
+// Zoom on M81
+core.moveToAltAzi(M81["altitude"] + .4, M81["azimuth"], 3);
+StelMovementMgr.zoomTo(1.75, 5);
+core.wait(5);
+
+core.waitForKeypress();
+StelSkyLayerMgr.setFlagShow(false);
+
+var NGC457 = core.getObjectInfo("NGC 457");
+// go to NGC457
+ConstellationMgr.deselectConstellations();
+ConstellationMgr.setFlagLines(false);
+ConstellationMgr.setFlagArt(false);
+ConstellationMgr.setFlagConstellationPick(true);
+core.selectConstellationByName("Cassiopeia");
+ConstellationMgr.setFlagLines(true);
+ConstellationMgr.setFlagArt(true);
+
+StelMovementMgr.zoomTo(180, 5);
+
+core.moveToAltAzi(90, NGC457["azimuth"], 4);
+core.wait(5);
+
+core.waitForKeypress();
+StelSkyLayerMgr.setFlagShow(true);
+
+// Zoom on NGC457
+core.moveToAltAzi(NGC457["altitude"] + .4, NGC457["azimuth"], 3);
+StelMovementMgr.zoomTo(1.75, 5);
+core.wait(5);
+
+core.waitForKeypress();
+StelSkyLayerMgr.setFlagShow(false);
+
+// Zoom back out
+StelMovementMgr.zoomTo(180, 5);
+core.moveToAltAzi(90, NGC457["azimuth"], 4);
+ConstellationMgr.deselectConstellations();
+ConstellationMgr.setFlagLines(true);
+ConstellationMgr.setFlagArt(true);
+core.wait(5);
+
+
+core.waitForKeypress();
+// Show The Great Square
+core.moveToAltAzi(90, 180, 4);
+
+core.waitForKeypress();
+AsterismMgr.setFlagLines(false);
+AsterismMgr.setFlagIsolateAsterismSelected(true);
+AsterismMgr.deselectAsterisms();
+AsterismMgr.setFlagLines(true);
+
+AsterismMgr.selectAsterism("Great Square of Pegasus");
+core.wait(2);
+
+core.waitForKeypress();
+AsterismMgr.setFlagLines(false);
+
+ConstellationMgr.deselectConstellations();
+ConstellationMgr.setFlagLines(false);
+ConstellationMgr.setFlagArt(false);
+ConstellationMgr.setFlagConstellationPick(true);
+core.selectConstellationByName("Pegasus");
+ConstellationMgr.setFlagLines(true);
+ConstellationMgr.setFlagArt(true);
+core.wait(3);   
+
+core.waitForKeypress();
+var M15 = core.getObjectInfo("M15");
+StelSkyLayerMgr.setFlagShow(true);
+
+// Zoom on M15
+core.moveToAltAzi(M15["altitude"] + .4, M15["azimuth"], 3);
+StelMovementMgr.zoomTo(1.75, 5);
+core.wait(3);   
+
+core.waitForKeypress();
+StelSkyLayerMgr.setFlagShow(false);
+
+// Zoom back out
+StelMovementMgr.zoomTo(180, 5);
+core.moveToAltAzi(90, 180, 4);
+ConstellationMgr.deselectConstellations();
+ConstellationMgr.setFlagLines(true);
+ConstellationMgr.setFlagArt(true);
+core.wait(4);
+
+core.waitForKeypress();
+AsterismMgr.setFlagLines(false);
+AsterismMgr.setFlagIsolateAsterismSelected(true);
+AsterismMgr.deselectAsterisms();
+AsterismMgr.setFlagLines(true);
+
+AsterismMgr.selectAsterism("Great Square of Pegasus");
+core.wait(2);
+
+core.waitForKeypress();
+
+ConstellationMgr.deselectConstellations();
+ConstellationMgr.setFlagLines(false);
+ConstellationMgr.setFlagArt(false);
+ConstellationMgr.setFlagConstellationPick(true);
+core.selectConstellationByName("Andromeda");
+ConstellationMgr.setFlagLines(true);
+ConstellationMgr.setFlagArt(true);
+core.wait(2);
+AsterismMgr.setFlagLines(false);
+
+core.waitForKeypress();
+var M31 = core.getObjectInfo("M31");
+StelSkyLayerMgr.setFlagShow(true);
+
+// Zoom on M31
+core.moveToAltAzi(M31["altitude"] + 8, M31["azimuth"], 3);
+StelMovementMgr.zoomTo(45, 5);
+core.wait(5);
+
+core.waitForKeypress();
+core.moveToAltAzi(M31["altitude"] + 1, M31["azimuth"], 3);
+StelMovementMgr.zoomTo(6, 5);
+core.wait(5);
+
+core.waitForKeypress();
+core.moveToAltAzi(M31["altitude"] + 8, M31["azimuth"], 3);
+StelMovementMgr.zoomTo(45, 5);
+core.wait(5);
+
+core.waitForKeypress();
+StelSkyLayerMgr.setFlagShow(false);
+
+StelMovementMgr.zoomTo(180, 5);
+core.moveToAltAzi(90, 0, 4);
+core.wait(5);
+
+core.waitForKeypress();
+core.moveToAltAzi(90, 90, 4);
+
+core.waitForKeypress();
+
+ConstellationMgr.deselectConstellations();
+ConstellationMgr.setFlagLines(false);
+ConstellationMgr.setFlagArt(false);
+ConstellationMgr.setFlagConstellationPick(true);
+core.selectConstellationByName("Orion");
+ConstellationMgr.setFlagLines(true);
+ConstellationMgr.setFlagArt(true);
+
+var M42 = core.getObjectInfo("M42");
+core.moveToAltAzi(90, M42["azimuth"], 3);
+core.wait(3);
+
+core.waitForKeypress();
+StelSkyLayerMgr.setFlagShow(true);
+
+ConstellationMgr.setFlagLines(false);
+ConstellationMgr.setFlagArt(false);
+// Zoom on M42
+core.moveToAltAzi(M42["altitude"] + 1, M42["azimuth"], 3);
+StelMovementMgr.zoomTo(4, 5);
+core.wait(5);
+
+core.waitForKeypress();
+var IC434 = core.getObjectInfo("IC 434");
+
+ConstellationMgr.setFlagLines(false);
+ConstellationMgr.setFlagArt(false);
+core.moveToAltAzi(IC434["altitude"] + 1, IC434["azimuth"], 3);
+StelMovementMgr.zoomTo(4, 5);
+core.wait(5);
+
+core.waitForKeypress();
+StelSkyLayerMgr.setFlagShow(false);
+StelMovementMgr.zoomTo(180, 5);
+core.moveToAltAzi(90, 90, 4);
+core.wait(5);
+
+
+core.waitForKeypress();
+var saturn = core.getObjectInfo("Saturn");
+
+// go to Saturn
+core.moveToAltAzi(90, saturn["azimuth"], 4);
+core.wait(4);
+
+core.waitForKeypress();
+// Zoom on Saturn
+core.moveToAltAzi(saturn["altitude"] + .025, saturn["azimuth"], 3);
+StelMovementMgr.zoomTo(.1, 5);
+core.wait(5);
+
+core.waitForKeypress();
+// Zoom back out
+StelMovementMgr.zoomTo(10, 4);
+core.moveToAltAzi(saturn["altitude"] + 2, saturn["azimuth"], 5);
+core.wait(5);
+
+core.waitForKeypress();
+var neptune = core.getObjectInfo("Neptune");
+
+// go to Neptune
+core.moveToAltAzi(neptune["altitude"] + 2.75, neptune["azimuth"], 5);
+core.wait(4);
+
+core.waitForKeypress();
+// Zoom on Neptune
+core.moveToAltAzi(neptune["altitude"] + .025, neptune["azimuth"], 3);
+StelMovementMgr.zoomTo(.1, 5);
+core.wait(5);
+
+core.waitForKeypress();
+// Zoom back out
+StelMovementMgr.zoomTo(180, 5);
+core.moveToAltAzi(90, neptune["azimuth"], 4);
+core.wait(5);
