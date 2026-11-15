@@ -25,15 +25,14 @@ DarkPurple = core.vec3f(0.28235, 0.17647, 0.28235)    // #482D48
 function setup() {
     core.debug("Setting up environment");
 
-    // reset view to home.
-    core.goHome();
-
-    // az mount, atmosphere, landscape, no lines, labels or markers
+    // Az mount, atmosphere, landscape, no lines, labels or markers
     core.clear("natural");
 
-    // clear all markers, labels, and images
-    StelSkyLayerMgr.setFlagShow(false);
+    // Look West, fov 180°, zenith at the center of the view
+    core.moveToAltAzi(90, 270, 3);
+    StelMovementMgr.zoomTo(180, 3);
 
+    // Clear all markers, labels, and images
     MarkerMgr.deleteAllMarkers();
     LabelMgr.deleteAllLabels();
     ScreenImageMgr.deleteAllImages();
@@ -46,63 +45,16 @@ function setup() {
         }
     }
 
-    // Set the observer location and time
+    // show sky layer background images
+    StelSkyLayerMgr.setFlagShow(true);
+
+    // Set the observer location, landscape, and time
     core.setObserverLocation(loc.lon, loc.lat, loc.elev, loc.name, loc.planet);
+    LandscapeMgr.setCurrentLandscapeName(landscape);
     core.setTimeRate(0); 
     core.setDate(dtg, spec = "local");
 
     core.setGuiVisible(false);
-}
-
-// Setup the environment for constellations tour
-function setupConstellations() {
-    // eq mount, const lines, no landscape, atmosphere, grid lines, labels or markers.
-    core.clear("deepspace");
-
-    ConstellationMgr.setFontSize(18); // default size is 15
-    ConstellationMgr.setArtIntensity(0.2);
-    ConstellationMgr.setLinesColor(Gray40);
-    ConstellationMgr.setLabelsColor(Gray40);
-    ConstellationMgr.setBoundariesColor(Gray80);
-    ConstellationMgr.setConstellationLineThickness(1);
-    ConstellationMgr.setFlagIsolateSelected(true);
-    ConstellationMgr.setFlagConstellationPick(true);
-    ConstellationMgr.deselectConstellations();
-
-    ConstellationMgr.setFlagLines(true);
-    ConstellationMgr.setFlagArt(true);
-    ConstellationMgr.setFlagBoundaries(true);
-}
-
-/**
- * Cleans up the application state by restoring the previously saved state.
- * It also: 
- * - Manually resets the Solar System and Star font size (default 13).
- * - Deletes all markers and labels.
- * - Makes the GUI visible.
- */
-function cleanup() {
-    restoreState("RestoreState");
-
-    // There is no getter for SolarSystem and StarMgr font size, restore them manually.
-    StarMgr.setFontSize(13); // default size is 13
-    SolarSystem.setFontSize(13); // default size is 13
-
-    MarkerMgr.deleteAllMarkers();
-    LabelMgr.deleteAllLabels();
-
-    ScreenImageMgr.deleteAllImages();
-
-    var keys = StelSkyLayerMgr.getAllKeys();
-    core.debug(StelSkyLayerMgr.getAllKeys());
-
-    if (keys.length > 2) {
-        for (var i = 2; i < keys.length; i++) {
-            core.removeSkyImage(keys[i]);
-        };
-    };
-
-    core.setGuiVisible(true);
 }
 
 /**
@@ -141,8 +93,12 @@ function showEqGrid() {
     GridLinesMgr.setFlagEquatorGrid(true);
 }
 
-// Fast forwards the time rate until a specified time or unt26il key is pressed.
+/**
+ * Fast forward at specified rate, until a specified time,
+ * or until "L"key is pressed.
+ */
 function fastForward(rate, wait = "L", spec = "local") {
+    StelMovementMgr.deselection();
     var timerate = core.getTimeRate();
     core.setTimeRate(rate);
     if (wait == "L") {
@@ -163,73 +119,68 @@ function fastForward(rate, wait = "L", spec = "local") {
     }
 }
 
-// Sets the time based on the Rise/Transit/Set of an object
-function setTimeFromRTS(timeString) {
+// Returns a date string from the Rise/Transit/Set of an object and current date
+function dateFromRTS(timeString) {
     var date = core.getDate("local");      // "2026-06-29T14:23:51"
     date = date.substring(0, 10);          // "2026-06-29"
 
     // Convert "20h39m" -> "20:39:00"
     var time = timeString.replace("h", ":").replace("m", ":00");
 
-    core.setDate(date + "T" + time, "local");
+    return date + "T" + time;
 }
 
-// Sets the time to sunrise
+// Sets the time to sunrise on current date
 function setSunrise() {
     var rts = core.getRTS("Sun");
-    setTimeFromRTS(rts["rise"]);
+    var date = dateFromRTS(rts["rise"]);
+    core.setDate(date, "local");
 }
 
-// Sets the time to sunset
+// Sets the time to sunset on current date
 function setSunset() {
     var rts = core.getRTS("Sun");
-    setTimeFromRTS(rts["set"]);
+    var date = dateFromRTS(rts["set"]);
+    core.setDate(date, "local");
 }
 
-// Sets the time to astronomical twilight (morning or evening)
+// Sets the time to astronomical twilight (morning or evening) on current date
 function setAstTwilight(which) {
     var rts = core.getRTS("Sun", -18);
     if (which === "start") {            //morning
-        setTimeFromRTS(rts["rise"]);
+        var date = dateFromRTS(rts["rise"]);
+        core.setDate(date, "local");
     } else if (which === "end") {       //evening
-        setTimeFromRTS(rts["set"]);
+        var date = dateFromRTS(rts["set"]);
+        core.setDate(date, "local");
     }
 }
 
-// get astronomical twilight (morning or evening)
-function getAstTwilight(which) {
-    var date = core.getDate("local");   // "2026-06-29T14:23:51"
-    date = date.substring(0, 10);          // "2026-06-29"
-    var rts = core.getRTS("Sun", -18);
+// get sunrise on current date
+function getAstSunrise() {
+    var rts = core.getRTS("Sun");
+    return dateFromRTS(rts["rise"]);
+}
 
+// get sunset on current date
+function getSunset() {
+    var rts = core.getRTS("Sun");
+    return dateFromRTS(rts["set"]);
+}
+
+// get astronomical twilight (morning or evening) on current date
+function getAstTwilight(which) {
+    var rts = core.getRTS("Sun", -18);
     if (which === "start") {            //morning
-        var time = rts["rise"].replace("h", ":").replace("m", ":00");
-        return date + "T" + time;
+        return dateFromRTS(rts["rise"]);
     } else if (which === "end") {       //evening
-        var time = rts["set"].replace("h", ":").replace("m", ":00");
-        return date + "T" + time;
+        return dateFromRTS(rts["set"]);
     }
 }
 
 /**
  * Loads a sky image layer using a parameter dictionary.
  * Wraps `core.loadSkyImage` and forwards fields from `params`.
- *
- * Params:
- * - params.id: string — unique layer identifier.
- * - params.path: string — image path (relative or absolute).
- * - params.ra: string — RA center (e.g., "14h 29m 29.2s").
- * - params.dec: string — Dec center (e.g., "-62d 40m 25s").
- * - params.angSize: number — angular size in degrees.
- * - params.rotation: number — rotation angle in degrees.
- * - params.minRes: number — minimum resolution threshold.
- * - params.maxBright: number — maximum brightness scaling.
- * - params.visible: boolean — show layer immediately when loaded.
- *
- * Example usage:
- *  loadImage(proxima);
- * 
- * Note: Image params are in images.inc in root scripts folder.
  */
 function loadImage(params) {
     core.loadSkyImage(
@@ -247,7 +198,15 @@ function loadImage(params) {
 
 
 // Draws pointer line along a great circle between two RA/Dec coordinates (in degrees)
-function drawPointer(ra1Deg, dec1Deg, ra2Deg, dec2Deg, steps, colorHex) {
+function drawPointer(obj1Name, obj2Name, steps, colorHex) {
+    var obj1 = core.getObjectInfo(obj1Name);
+    var ra1Deg = obj1["ra"];
+    var dec1Deg = obj1["dec"];
+
+    var obj2 = core.getObjectInfo(obj2Name);
+    var ra2Deg = obj2["ra"];
+    var dec2Deg = obj2["dec"];
+
     var deg2rad = Math.PI / 180.0;
     var rad2deg = 180.0 / Math.PI;
 
@@ -300,4 +259,52 @@ function drawPointer(ra1Deg, dec1Deg, ra2Deg, dec2Deg, steps, colorHex) {
     }
 }
 
+// select constellation by name and display isolated (lines and art)
+function showConstellation(Const) {
 
+    ConstellationMgr.deselectConstellations();
+    ConstellationMgr.setFlagIsolateSelected(true);
+    ConstellationMgr.setFlagConstellationPick(true);
+
+    core.selectConstellationByName(Const);
+    ConstellationMgr.setFlagLines(true);
+    ConstellationMgr.setFlagArt(true);
+}
+
+// move to a selected object, zoom in and back out
+function goToAltAz(obj, fov=1, duration=4) {
+
+    // Move to object, initially zoomed out
+    core.moveToAltAzi(90, obj["azimuth"], duration);
+    StelMovementMgr.zoomTo(180, duration);
+    core.wait(duration);
+    core.waitForKeypress();
+
+    // Zoom in (centered 1/5 of the specified field of view above the object)
+    core.moveToAltAzi(obj["altitude"] + fov/5, obj["azimuth"], duration);
+    StelMovementMgr.zoomTo(fov, duration);
+    core.wait(duration);
+    ConstellationMgr.setFlagLines(false);
+    ConstellationMgr.setFlagArt(false);
+    core.waitForKeypress();
+
+    // Zoom out
+    core.moveToAltAzi(90, obj["azimuth"], duration);
+    StelMovementMgr.zoomTo(180, duration);
+    core.wait(duration);
+}
+
+// wrapper function to go to an object, optionally showing its constellation
+function objectGoTo(name, fov=1, duration=4, Const=true) {
+    var obj = core.getObjectInfo(name);
+
+    if (Const) {
+        showConstellation(obj["iauConstellation"]);
+    } else {
+        ConstellationMgr.deselectConstellations();
+        ConstellationMgr.setFlagLines(false);
+        ConstellationMgr.setFlagArt(false);
+    }
+
+    goToAltAz(obj, fov, duration);
+}
