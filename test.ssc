@@ -105,3 +105,94 @@ core.waitForKeypress();
 objectGoTo("Saturn", fov=0.15, duration=4, Const=false);
 
 core.setGuiVisible(true);
+/*
+Name: What's Up in the Night Sky (14 November 2026)
+License: Public Domain
+Author: Chris Bennett
+Version: 1.0
+Description: A Script for What's up in the night sky.
+*/
+
+include("settings.inc");
+include("common_objects.inc");
+
+const dtg = "2026-11-14T16:45:00";
+const loc = { lon: -76.986769, lat: 39.647307, elev: 210, name: "BBNC", planet: "Earth" };
+const landscape = "Bear Branch 2"; // has a fairly clear view of the sky
+
+setup(); // see settings.inc for setup details
+setSunset()
+
+core.waitForKeypress();
+// Fast forward to the end of astronomical twilight (evening)
+fastForward(800, getAstTwilight("end"));
+
+core.waitForKeypress();
+// Look North
+core.moveToAltAzi(90, 0, 4);
+core.wait(4);
+
+core.waitForKeypress();
+AsterismMgr.setFlagIsolateAsterismSelected(true);
+AsterismMgr.deselectAsterisms();
+AsterismMgr.setFlagLines(true);
+
+// Show the Big Dipper
+AsterismMgr.selectAsterism("Big Dipper (Plough)");
+core.wait(1);
+
+core.waitForKeypress();
+// Draw a pointer to Polaris
+drawPointer("Dubhe", "Polaris", 40, "#D42A2A");
+core.wait(1);
+
+core.waitForKeypress();
+// Show the Little Dipper
+AsterismMgr.selectAsterism("Little Dipper");
+MarkerMgr.deleteAllMarkers();
+core.wait(1);
+
+core.waitForKeypress();
+// Show the "W"
+AsterismMgr.selectAsterism("W");
+core.wait(1);
+
+// Draw a pointer to Polaris
+drawPointer("Navi", "Polaris", 40, "#D42A2A");
+core.wait(1);
+
+core.waitForKeypress();
+// Clear Pointer lines
+MarkerMgr.deleteAllMarkers();
+core.wait(1);
+
+core.waitForKeypress();
+// Clear Asterisms
+AsterismMgr.deselectAsterisms();
+AsterismMgr.setFlagLines(false);
+core.wait(1);
+
+core.waitForKeypress();
+// Go to the Moon, no constellation
+objectGoTo("Moon", fov=2, duration=4, Const=false);
+
+core.waitForKeypress();
+// M57, with Lyra
+objectGoTo("M57", fov=0.5, duration=4);
+
+core.waitForKeypress();
+// M15, with Pegasus
+objectGoTo("M15", fov=1, duration=4);
+
+core.waitForKeypress();
+// fast forward to 10 PM
+fastForward(800, "2026-11-14T22:00:00");
+
+// M42, with Orion
+objectGoTo("M42", fov=3, duration=4);
+
+core.waitForKeypress();
+// Saturn, no constellation
+objectGoTo("Saturn", fov=0.15, duration=4, Const=false);
+
+core.setGuiVisible(true);
